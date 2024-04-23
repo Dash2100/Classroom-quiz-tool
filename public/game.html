@@ -39,9 +39,15 @@
             game_code = $("#game_code").val()
 
             // check game_code exists
+            const check_data = {
+                game_code: game_code
+            };
+
             $.ajax({
-                url: '/player/check_code/' + game_code,
-                type: 'GET',
+                url: '/player/check_code/',
+                type: 'POST',
+                data: JSON.stringify(check_data),
+                contentType: 'application/json',
                 success: function (data) {
                     if (data.status === "success") {
                         // update UI

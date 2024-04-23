@@ -35,8 +35,8 @@ app.post('/player/identify', (req, res) => {
     });
 });
 
-app.get('/player/check_code/:game_code', (req, res) => {
-    const game_code = req.params.game_code;
+app.post('/player/check_code', (req, res) => {
+    const game_code = req.body.game_code;
 
     db.get(`SELECT * FROM Games WHERE game_code = ?`, [game_code], (err, row) => {
         if (err) {
