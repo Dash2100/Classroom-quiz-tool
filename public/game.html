@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/scripts/zepto.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <title>加入遊戲 | QuizRace</title>
+</head>
+
+<body>
+    <h1>QuizRace</h1>
+
+    <div id="game_code_input_page">
+        <h2>輸入遊戲代碼加入遊戲</h2>
+        <input type="text" id="game_code" />
+        <button id="join_game_btn">加入遊戲</button>
+    </div>
+
+    <div id="player_identify_page" style="display: none;">
+        <h2>輸入玩家名稱</h2>
+        <input type="text" id="player_name" />
+        <button id="identify_btn">確認</button>
+    </div>
+</body>
+
+<script>
+    let socket = io();
+    let game_code = null;
+
+    socket.on('connect', function () {
+        console.log("connected")
+    });
+
+    $('document').ready(function () {
+
+        $("#join_game_btn").click(function () {
+            game_code = $("#game_code").val()
+
+            // check game_code exists
+            $.ajax({
+                url: '/player/check_code/' + game_code,
+                type: 'GET',
+                success: function (data) {
+                    if (data.status === "success") {
+                        // update UI
+                        $("#game_code_input_page").hide()
+                        $("#player_identify_page").show()
+                    }
+
+                    if (data.status === "error") {
+                        alert("Game code not found")
+                    }
+                }
+            });
+        });
+
+        $("#identify_btn").click(function () {
+            const data = {
+                player_name: $("#player_name").val(),
+                game_code: game_code
+            };
+
+            $.ajax({
+                url: '/player/identify',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function (data) {
+                    console.log(data)
+                }
+            });
+        });
+
+    });
+
+    // const sendMessage = () => {
+    //     const data = {
+    //         PlayerName: $("#PlayerName").val()
+    //     };
+
+    //     $.ajax({
+    //         url: '/player/identify',
+    //         type: 'POST',
+    //         data: JSON.stringify(data),
+    //         contentType: 'application/json',
+    //         success: function (data) {
+    //             console.log(data)
+    //         }
+    //     });
+    // }
+</script>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/scripts/zepto.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <title>主持畫面 | QuizRace</title>
+</head>
+
+<body>
+    <h1>QuizRace</h1>
+
+    <!-- 初始創建畫面 -->
+    <div id="create_game_page">
+        <button id="create_game_btn">創建遊戲</button>
+    </div>
+
+    <!-- 等待玩家加入畫面 -->
+    <div id="waiting_player_page" style="display: none;">
+        <h2>遊戲代碼: <span id="game_code"></span></h2>
+        <h2>等待玩家加入</h2>
+        <div id="player-list"></div>
+    </div>
+
+</body>
+
+<script>
+    var socket = io();
+
+    socket.on('connect', function () {
+        console.log("connected")
+    });
+
+    socket.on('player_identify', function (data) {
+        console.log(data)
+        const messageList = document.getElementById("message-list")
+        const messageElement = document.createElement("div")
+        messageElement.innerText = data
+        messageList.appendChild(messageElement)
+    });
+
+    $("document").ready(function () {
+
+        $("#create_game_btn").click(function () {
+            $.ajax({
+                url: '/host/create',
+                type: 'POST',
+                contentType: 'application/json',
+                success: function (data) {
+                    if (data.status === "success") {
+                        const game_code = data.game_code
+
+                        // update UI
+                        $("#create_game_page").hide()
+                        $("#waiting_player_page").show()
+                        $("#game_code").text(game_code)
+
+                        // listen to player join event
+                        socket.on('player_join_' + game_code, function (data) {
+                            console.log(data)
+                            const playerList = document.getElementById("player-list")
+                            const playerElement = document.createElement("div")
+                            playerElement.innerText = data
+                            playerList.appendChild(playerElement)
+                        });
+
+                    }
+                }
+            });
+        });
+
+    });
+</script>
+
+</html>
