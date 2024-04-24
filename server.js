@@ -35,6 +35,22 @@ app.post('/player/identify', (req, res) => {
     });
 });
 
+io.on('connection', (socket) => {
+
+    socket.on('join_game', (data) => {
+        const game_code = data.game_code;
+        const player_name = data.player_name;
+
+        console.log('Player ' + player_name + ' joined game ' + game_code);
+
+        io.emit('host_' + game_code, {
+            event: 'player_join',
+            player_name: player_name
+        });
+    });
+
+});
+
 app.post('/player/check_code', (req, res) => {
     const game_code = req.body.game_code;
 
@@ -87,6 +103,25 @@ app.post('/host/create', (req, res) => {
         game_code: game_code
     });
 
+});
+
+app.post('/host/start', (req, res) => {
+    const game_code = req.body.game_code;
+
+    db.run(`UPDATE Games SET Started = 1 WHERE game_code = ?`, [game_code], function (err) {
+        if (err) {
+            return console.log(err.message);
+        }
+        console.log(`Game ${game_code} started`);
+    });
+
+    io.emit('game_' + game_code, {
+        event: 'game_start'
+    });
+
+    res.json({
+        status: 'success'
+    });
 });
 
 // io.on('connection', (socket) => {

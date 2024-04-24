@@ -11,6 +11,8 @@
 
 <body>
     <h1>QuizRace</h1>
+    <p id="socket_connection_status">Socket connection status: <span id="connection_status">Disconnected</span></p>
+    <p id="game_code_status">Game code: <span id="game_code_status">Not entered</span></p>
 
     <div id="game_code_input_page">
         <h2>輸入遊戲代碼加入遊戲</h2>
@@ -23,14 +25,30 @@
         <input type="text" id="player_name" />
         <button id="identify_btn">確認</button>
     </div>
+
+    <div id="waiting_start_page" style="display: none;">
+        <h2>等待遊戲開始</h2>
+    </div>
+
+    <div id="game_page" style="display: none;">
+        <h2>遊戲進行中</h2>
+    </div>
 </body>
 
 <script>
     let socket = io();
     let game_code = null;
 
+    //socket connected
     socket.on('connect', function () {
-        console.log("connected")
+        console.log("connected");
+        $("#connection_status").text("Connected");
+    });
+
+    //socket connection lost
+    socket.on('disconnect', function () {
+        console.log("disconnected");
+        $("#connection_status").text("Disconnected");
     });
 
     $('document').ready(function () {
@@ -53,6 +71,7 @@
                         // update UI
                         $("#game_code_input_page").hide()
                         $("#player_identify_page").show()
+                        $("#game_code_status").text(game_code)
                     }
 
                     if (data.status === "error") {
@@ -63,39 +82,34 @@
         });
 
         $("#identify_btn").click(function () {
-            const data = {
-                player_name: $("#player_name").val(),
-                game_code: game_code
-            };
+            const player_name = $("#player_name").val();
 
-            $.ajax({
-                url: '/player/identify',
-                type: 'POST',
-                data: JSON.stringify(data),
-                contentType: 'application/json',
-                success: function (data) {
-                    console.log(data)
-                }
+            socket.emit('join_game', {
+                game_code: game_code,
+                player_name: player_name
             });
+
+            // listen on player event socket
+            socker_connection(game_code);
+
+            $("#player_identify_page").hide()
+            $("#waiting_start_page").show()
         });
 
     });
 
-    // const sendMessage = () => {
-    //     const data = {
-    //         PlayerName: $("#PlayerName").val()
-    //     };
+    const socker_connection = (game_code) => {
+        // listen on game event socket
+        socket.on('game_' + game_code, function (data) {
+            console.log(data)
 
-    //     $.ajax({
-    //         url: '/player/identify',
-    //         type: 'POST',
-    //         data: JSON.stringify(data),
-    //         contentType: 'application/json',
-    //         success: function (data) {
-    //             console.log(data)
-    //         }
-    //     });
-    // }
+            if (data.event === 'game_start') {
+                $("#waiting_start_page").hide()
+                $("#game_page").show()
+            }
+        });
+
+    }
 </script>
 
 </html>
