@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="/scripts/zepto.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>問答系統 | QuizRace</title>
+</head>
+
+<body data-theme="light" class="antialiased h-screen">
+
+
+    <div class="navbar bg-base-200">
+        <div class="navbar-start">
+
+        </div>
+        <div class="navbar-center">
+            <a class="btn btn-ghost text-xl font-extrabold"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 7h3" />
+                    <path d="M3 11h2" />
+                    <path
+                        d="M9.02 8.801l-.6 6a2 2 0 0 0 1.99 2.199h7.98a2 2 0 0 0 1.99 -1.801l.6 -6a2 2 0 0 0 -1.99 -2.199h-7.98a2 2 0 0 0 -1.99 1.801z" />
+                    <path d="M9.8 7.5l2.982 3.28a3 3 0 0 0 4.238 .202l3.28 -2.982" />
+                </svg>QuizRace</a>
+        </div>
+
+        <div class="navbar-end px-3">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- join game -->
+    <div class="p-10 rounded-xl bg-base-300 shadow-xl w-11/12 md:w-5/12 mx-auto mt-44   ">
+        <div class="min-h-40 flex flex-col gap-3">
+            <h2 class="text-3xl font-extrabold text-center">加入一場遊戲</h2>
+            <p class="text-md text-center">請輸入主辦方提供的遊戲代碼 (共六位數字)</p>
+            <div class="flex gap-3 mx-auto mt-3">
+                <input type="text" placeholder="Type here" class="input input-bordered w-full max-w-56 mr-3">
+                <div class="card-actions justify-end">
+                    <button class="btn btn-neutral">加入遊戲</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- <div class="w-full h-full">
+        <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto mt-5">
+            <div class="card-body h-[calc(100vh-12rem)]">
+                <h2 class="card-title">Card title!</h2>
+                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <div class="card-actions justify-end">
+                    <button class="btn btn-primary">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- bottom bar -->
+    <div class="navbar fixed bottom-0 bg-base-200 px-7">
+        <div class="navbar-start">
+            <p class="text-lg font-bold">ABCED</p>
+        </div>
+
+        <div class="navbar-end">
+            <!-- connection state -->
+            <!-- <div id="disconnected" class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500 my-auto"></div>
+                <p class="text-md my-auto font-bold">連線中斷</p>
+            </div> -->
+
+            <div id="connected" class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-green-500 my-auto"></div>
+                <p class="text-md my-auto font-bold">已連線</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+    <h1>QuizRace</h1>
+    <p id="socket_connection_status">Socket connection status: <span id="connection_status">Disconnected</span></p>
+    <p id="game_code_status">Game code: <span id="game_code_status">Not entered</span></p>
+
+    <div id="game_code_input_page">
+        <h2>輸入遊戲代碼加入遊戲</h2>
+        <input type="text" id="game_code" />
+        <button id="join_game_btn">加入遊戲</button>
+    </div> -->
+
+</body>
+
+</html>

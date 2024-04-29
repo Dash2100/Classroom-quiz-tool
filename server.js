@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
+const { readFileSync } = require('fs');
 
 const app = express();
 const port = 3030;
@@ -79,32 +80,6 @@ app.get('/host', (req, res) => {
     res.sendFile(__dirname + '/public/host.html');
 });
 
-app.post('/host/create', (req, res) => {
-    // ```
-    // id INTEGER PRIMARY KEY AUTOINCREMENT,
-    // game_code TEXT NOT NULL UNIQUE,
-    // Started BOOLEAN NOT NULL DEFAULT 0,
-    // game_detail TEXT
-    // ```
-
-    const game_code = Math.random().toString(36).substring(2, 8);
-    let game_detail = [1, 2, 3, 4];
-
-    // insert game to database
-    db.run(`INSERT INTO Games (game_code, game_detail) VALUES (?, ?)`, [game_code, JSON.stringify(game_detail)], function (err) {
-        if (err) {
-            return console.log(err.message);
-        }
-        console.log(`Game ${game_code} created with id ${this.lastID}`);
-    });
-
-    res.json({
-        status: 'success',
-        game_code: game_code
-    });
-
-});
-
 app.post('/host/start', (req, res) => {
     const game_code = req.body.game_code;
 
@@ -123,6 +98,51 @@ app.post('/host/start', (req, res) => {
         status: 'success'
     });
 });
+
+app.post('/host/create', (req, res) => {
+    // ```
+    // id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // game_code TEXT NOT NULL UNIQUE,
+    // Started BOOLEAN NOT NULL DEFAULT 0,
+    // game_detail TEXT
+    // ```
+
+    const game_code = Math.random().toString(36).substring(2, 8);
+
+    // insert game to database
+    db.run(`INSERT INTO Games (game_code) VALUES (?)`, [game_code], function (err) {
+        if (err) {
+            return console.log(err.message);
+        }
+        console.log(`Game ${game_code} created with id ${this.lastID}`);
+    });
+
+    res.json({
+        status: 'success',
+        game_code: game_code
+    });
+
+});
+
+app.post('/host/updateDetail', (req, res) => {
+    const game_code = req.body.game_code;
+    const game_detail = req.body.game_detail;
+
+    db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify(game_detail), game_code], function (err) {
+        if (err) {
+            return console.log(err.message);
+        }
+        console.log(`Game ${game_code} updated`);
+    });
+
+    res.json({
+        status: 'success'
+    });
+})
+
+app.get('/game/getDetail', (req, res) => {
+
+})
 
 // io.on('connection', (socket) => {
 //     console.log('a user connected');

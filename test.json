@@ -1,0 +1,18 @@
+[
+    {
+        "quiz_type": "choose",
+        "question": [
+            {
+                "question": "question_text",
+                "chooses": [
+                    "choice1",
+                    "choice2",
+                    "choice3",
+                    "choice4"
+                ],
+                "answer": 2,
+                "image": "image_url"
+            }
+        ]
+    }
+]
