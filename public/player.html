@@ -19,6 +19,14 @@
         border-radius: 10px;
     }
 
+    .swal2-show {
+        animation: show .2s !important;
+    }
+
+    .swal2-hide {
+        animation: hide .2s !important;
+    }
+
     @keyframes show {
         0% {
             transform: scale(0.8);
@@ -43,19 +51,22 @@
             opacity: 0
         }
     }
+
+    body {
+        height: 100dvh !important;
+    }
 </style>
 
-<body data-theme="light" class="antialiased h-dvh w-dvw select-none overflow-hidden">
-
+<body data-theme="light" class="antialiased h-dvh w-dvw select-none overflow-hidden bg-base-100">
 
     <div class="navbar bg-base-200 overflow-hidden">
         <div class="navbar-start">
 
         </div>
         <div class="navbar-center">
-            <a class="btn btn-ghost text-xl font-extrabold"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
+            <a class="btn btn-ghost text-xl font-extrabold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                     <path d="M3 7h3" />
                     <path d="M3 11h2" />
@@ -67,11 +78,15 @@
 
         <div class="navbar-end px-3">
             <div class="dropdown">
-                <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h7" />
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle" onclick="toggleDarkmode();">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                        <path d="M12 3l0 18" />
+                        <path d="M12 9l4.65 -4.65" />
+                        <path d="M12 14.3l7.37 -7.37" />
+                        <path d="M12 19.6l8.85 -8.85" />
                     </svg>
                 </div>
             </div>
@@ -79,71 +94,78 @@
 
     </div>
 
-    <!-- join game -->
-    <div id="join_game_page"
-        class="p-8 rounded-xl bg-base-300 shadow-xl mx-auto mt-44 transition-all ease-in-out duration-300 w-11/12 max-w-xl bg-base-100">
-        <div class="min-h-40 flex flex-col gap-3">
-            <h2 class="text-3xl font-extrabold text-center">加入一場遊戲</h2>
-            <p class="text-md text-center">請輸入主辦方提供的遊戲代碼 (六位數字)</p>
-            <div class="flex flex-col gap-3 mt-3 mx-5">
-                <input type="text" placeholder="輸入遊戲代碼" id="game_code" maxlength="5"
-                    class="input input-bordered w-full mr-3 text-center focus:ring-0 focus:border-none">
-                <div class="card-actions justify-center">
-                    <button class="btn btn-neutral w-full" onclick="UI_joingame()">
-                        <p id="join_game_text">加入遊戲</p>
-                        <span id="join_game_loading" class="loading loading-spinner loading-md hidden"></span>
-                    </button>
+    <div class="w-full h-full">
+        <!-- join game -->
+        <div id="join_game_page"
+            class="p-8 rounded-xl bg-base-300 shadow-xl mx-auto mt-44 transition-all ease-in-out duration-300 w-11/12 max-w-xl bg-base-100">
+            <div class="min-h-40 flex flex-col gap-3">
+                <h2 class="text-3xl font-black text-center">加入一場遊戲</h2>
+                <p class="text-md text-center">請輸入主辦方提供的遊戲代碼 (六位數字)</p>
+                <div class="flex flex-col gap-3 mt-3 mx-5">
+                    <input type="text" placeholder="輸入遊戲代碼" id="game_code" maxlength="5"
+                        class="input input-bordered w-full mr-3 text-center focus:ring-0 focus:border-none">
+                    <div class="card-actions justify-center">
+                        <button class="btn btn-neutral w-full" onclick="joinGame()">
+                            <p id="join_game_text">加入遊戲</p>
+                            <span id="join_game_loading" class="loading loading-spinner loading-md hidden"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="qcard"
-        class="w-full h-full transition-all ease-in-out duration-300 translate-x-10 opacity-0 overflow-hidden" hidden>
+        <div id="qcard"
+            class="w-full h-full max-w-screen-2xl mx-auto transition-all ease-in-out duration-300 translate-x-10 opacity-0 overflow-hidden"
+            hidden>
 
-        <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto mt-8">
-            <!-- <div class="card-body h-[calc(100vh-12rem)]">
-                <h2 class="card-title text-4xl">投票</h2>
-                <p class="text-2xl">測試測試隨便選一個就好？</p>
-                <div class="grid md:grid-cols-2 gap-4 mt-5">
-                    <button class="btn text-base-100 btn-info h-max md:min-h-36 md:h-max md:p-0 text-2xl">第一個選項</button>
-                    <button
-                        class="btn text-base-100 btn-warning h-max md:min-h-36 md:h-max md:p-0 text-2xl">第二個選項</button>
-                    <button
-                        class="btn text-base-100 btn-success h-max md:min-h-36 md:h-max md:p-0 text-2xl">第三個選項</button>
-                    <button
-                        class="btn text-base-100 btn-error h-max md:min-h-36 md:h-max md:p-0 text-2xl">第四個選項</button>
-                </div>
-            </div> -->
+            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto mt-8">
 
-            <!-- <div class="card-body h-[calc(100vh-12rem)] mx-auto translate-y-24 flex flex-col gap-3">
-                <lord-icon src="https://cdn.lordicon.com/kgvlhryh.json" trigger="loop" class="mx-auto"
-                    style="width:250px;height:250px">
-                </lord-icon>
-                <h2 class="font-black text-4xl">主辦方說話中</h2>
-                <p class="text-2xl text-center">想想今天晚餐要吃什麼吧！</p>
-            </div> -->
 
-            <div class="card-body h-[calc(100vh-238px)] p-3">
+                <div class="card-body h-[calc(100vh-238px)] p-0 overflow-hidden">
+                    <div class="w-full h-full absolute bg-black rounded-xl opacity-35 z-50" id="card_overlay" hidden>
+                    </div>
 
-                <div id="quque" class="flex flex-col gap-3">
-                    <lord-icon src="https://cdn.lordicon.com/kgvlhryh.json" trigger="hover"
-                        style="width:250px;height:250px" class="mx-auto">
-                    </lord-icon>
-                    <h2 class="font-black text-3xl md:text-4xl text-center">等待其他玩家加入中...</h2>
-                    <p class="text-xl md:text-2xl text-center">想想今天晚餐要吃什麼吧！</p>
+                    <div id="quque" class="flex flex-col gap-3 my-auto">
+                        <lord-icon src="https://cdn.lordicon.com/kgvlhryh.json" trigger="loop"
+                            style="width:250px;height:250px" class="mx-auto">
+                        </lord-icon>
+                        <h2 class="font-black text-3xl md:text-4xl text-center">等待其他玩家加入中...</h2>
+                        <p class="text-xl md:text-2xl text-center">想想今天晚餐要吃什麼吧！</p>
+                    </div>
+
+                    <!-- <div id="waiting" class="flex flex-col gap-3 my-auto" hidden>
+                        <lord-icon src="https://cdn.lordicon.com/hmqggwrl.json" trigger="loop"
+                            style="width:250px;height:250px" colors="primary:#545454,secondary:#b4b4b4" class="mx-auto">
+                        </lord-icon>
+                        <h2 class="font-black text-3xl md:text-4xl text-center">目前沒有題目！</h2>
+                        <p class="text-xl md:text-2xl text-center">等待主持人出題中...</p>
+                    </div> -->
+
+                    <!-- <div class="card-body h-[calc(100vh-12rem)]">
+                        <h2 class="card-title text-4xl">投票：請問以下哪個是正確的？</h2>
+                        <p class="text-2xl">請選擇你認為正確的答案</p>
+                        <div class="grid md:grid-cols-2 gap-4 mt-5">
+                            <button
+                                class="btn text-base-100 btn-info h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl">第一個選項</button>
+                            <button
+                                class="btn text-base-100 btn-warning h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl">第二個選項</button>
+                            <button
+                                class="btn text-base-100 btn-success h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl">第三個選項</button>
+                            <button
+                                class="btn text-base-100 btn-error h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl">第四個選項</button>
+                        </div>
+                    </div> -->
+
                 </div>
 
             </div>
-
         </div>
-
     </div>
 
     <!-- bottom bar -->
     <div class="navbar fixed bottom-0 bg-base-200 px-7">
         <div class="navbar-start">
-            <p class="text-lg font-bold">ABCED</p>
+            <p class="text-lg font-bold" id="current_game_code"></p>
         </div>
 
         <div class="navbar-end">
@@ -179,20 +201,23 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
 
 <script>
+    // 防止輸入非數字
+    $('#game_code').on('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
 
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'center',
-        iconColor: 'white',
-        customClass: {
-            popup: 'colored-toast',
-        },
-        showConfirmButton: false,
-        timer: 1500,
-        timerProgressBar: true,
-    })
+    function joinGame() {
+        if ($('#game_code').val().length !== 5) {
+            alert('錯誤', '請輸入正確的遊戲代碼', 'error');
+            return;
+        }
 
-    const UI_joingame = () => {
+        UI_joingame();
+    }
+
+    function UI_joingame() {
+        $('#current_game_code').text($('#game_code').val());
+
         $('#join_game_page').addClass('-translate-x-5 opacity-0');
 
         setTimeout(() => {
@@ -205,7 +230,7 @@
         }, 350);
     }
 
-    const UI_backToJoinGame = () => {
+    function UI_backToJoinGame() {
         $('#qcard').addClass('translate-x-10 opacity-0');
 
         setTimeout(() => {
@@ -217,6 +242,27 @@
             $('#join_game_page').removeClass('-translate-x-5 opacity-0');
         }, 350);
     }
+
+    function toggleDarkmode() {
+        // change body data-theme
+        if (document.body.getAttribute('data-theme') === 'light') {
+            document.body.setAttribute('data-theme', 'dark');
+        } else {
+            document.body.setAttribute('data-theme', 'light');
+        }
+    }
+
+    function alert(title, text, icon) {
+        Swal.fire({
+            icon: icon,
+            title: title,
+            text: text,
+            heightAuto: false,
+            confirmButtonText: '確定',
+        })
+    }
+
+    // UI_joingame();
 </script>
 
 </html>
