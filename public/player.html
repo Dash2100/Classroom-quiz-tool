@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- <link rel="stylesheet" href="/src/player.css"> -->
     <link rel="stylesheet" href="/src/player.css">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -96,7 +97,7 @@
             class="w-full h-full max-w-screen-2xl mx-auto transition-all ease-in-out duration-300 translate-x-10 opacity-0 overflow-hidden"
             hidden>
 
-            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto mt-8" id="main_game_card">
+            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto mt-8">
 
 
                 <div class="card-body h-[calc(100vh-238px)] p-0 overflow-hidden">
@@ -118,6 +119,8 @@
                         <h2 class="font-black text-3xl md:text-4xl text-center">目前沒有題目！</h2>
                         <p class="text-xl md:text-2xl text-center">等待主持人出題中...</p>
                     </div>
+
+                    <div id="main_game_card"></div>
 
                 </div>
 
@@ -150,9 +153,9 @@
         </div>
     </div>
 
-    <template id="question_template">
-        <div class="card-body h-[calc(100vh-12rem)]">
-            <h2 class="card-title text-4xl">選擇題：{title}</h2>
+    <template id="vote_template">
+        <div class="card-body h-[calc(100vh-15rem)]">
+            <h2 class="card-title text-4xl">投票：{title}</h2>
             <p class="text-2xl">請選擇你認為正確的答案</p>
             <div class="grid md:grid-cols-2 gap-4 mt-5">
                 <button class="btn text-base-100 btn-info h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl"
@@ -167,27 +170,24 @@
         </div>
     </template>
 
-    <template id="vote_template">
-        <div class="card-body h-[calc(100vh-12rem)]">
-            <h2 class="card-title text-4xl">投票：{title}</h2>
-            <p class="text-2xl">投給其中一個選項</p>
-            <div class="grid md:grid-cols-2 gap-4 mt-5">
-                <button class="btn text-base-100 btn-info h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl"
-                    id="q1">第一個選項</button>
-                <button class="btn text-base-100 btn-warning h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl"
-                    id="q2">第二個選項</button>
-                <button class="btn text-base-100 btn-success h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl"
-                    id="q3">第三個選項</button>
-                <button class="btn text-base-100 btn-error h-max md:min-h-36 md:h-max md:p-0 text-xl md:text-2xl"
-                    id="q4">第四個選項</button>
+    <template id="ticket_template">
+        <div class="card-body h-[calc(100vh-15rem)]">
+            <div id="ticket" class="flex flex-col gap-3 my-auto">
+                <lord-icon src="https://cdn.lordicon.com/lzgqzxrq.json" trigger="loop" style="width:250px;height:250px"
+                    class="mx-auto">
+                </lord-icon>
+                <h2 class="font-black text-3xl md:text-4xl text-center">搶答</h2>
+                <p class="text-xl md:text-2xl text-center">按鈕變成紅色後即可點擊搶答按鈕</p>
+                <button class="btn btn-error text-base-100 text-xl mx-20 md:text-2xl" id="ticket_btn"
+                    disabled>點擊搶答</button>
             </div>
         </div>
     </template>
 
     <template id="input_template">
-        <div class="card-body h-[calc(100vh-12rem)]">
+        <div class="card-body h-[calc(100vh-15rem)]">
             <h2 class="card-title text-4xl">輸入：{title}</h2>
-            <p class="text-2xl">請在輸入匡中輸入你的答案</p>
+            <p class="text-2xl">請在輸入框中輸入你的答案</p>
             <lord-icon src="https://cdn.lordicon.com/ylvuooxd.json" trigger="hover" style="width:250px;height:250px"
                 class="mx-auto">
             </lord-icon>
@@ -206,6 +206,12 @@
 <script src="https://cdn.lordicon.com/lordicon.js"></script>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script> -->
 
+<!-- <script src="/public/src/player.js"></script> -->
 <script src="/src/player.js"></script>
+
+<script>
+    // UI_naming();
+    // UI_joingame();
+</script>
 
 </html>

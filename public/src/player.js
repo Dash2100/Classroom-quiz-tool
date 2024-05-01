@@ -42,8 +42,9 @@ const socker_connection = (game_code) => {
             let title = data.title;
             let options = data.options;
 
-            if (type === 'question') {
-                question(title, options);
+            console.log(options);
+            if (type === 'ticket') {
+                ticket();
             }
 
             if (type === 'vote') {
@@ -53,6 +54,15 @@ const socker_connection = (game_code) => {
             if (type === 'input') {
                 inputQuestion(title);
             }
+        }
+
+        if (data.event === 'ticket_allow') {
+            $('#ticket_btn').prop('disabled', false);
+        }
+
+        if (data.event === 'close_question') {
+            $("#main_game_card").html("");
+            $("#waiting").show();
         }
 
     });
@@ -66,11 +76,13 @@ function join_game_event() {
         type: 'GET',
         success: function (data) {
             console.log(data);
+            // alert(JSON.stringify(data));
             if (data.game_detail.started) {
-                alert('錯誤', '遊戲已經開始', 'error');
+                $('#quque').hide();
+                $('#waiting').show();
             }
             else {
-                alert('成功', '加入遊戲成功', 'success');
+                // alert('成功', '加入遊戲成功', 'success');
             }
         }
     });
@@ -206,41 +218,48 @@ function alert(title, text, icon) {
     })
 }
 
-function question(title, options) {
-    let question_template = $("#question_template").html();
-    question_template = question_template.replace("{title}", title);
+function ticket() {
+    $("#waiting").hide();
 
-    let question_options = JSON.parse(options);
-    let len = question_options.length;
+    let ticket_template = $("#ticket_template").html();
+    $("#main_game_card").html(ticket_template);
 
-    // 將修改後的模板加入到頁面中的某個元素
-    $("#main_game_card").html(question_template);
+    $("#ticket_btn").off('click').on('click', function () {
+        $("#ticket_btn").prop('disabled', true);
 
-    // Hide all buttons initially
-    $("#q1, #q2, #q3, #q4").hide();
-
-    // Loop through the options and set up buttons
-    for (let i = 0; i < len; i++) {
-        let button = $("#q" + (i + 1)); // Get button by ID
-        button.text(question_options[i]); // Set button text to the option
-        button.show(); // Make the button visible
-
-        // Example event handler: alert the option when clicked
-        button.off('click').on('click', function () {
-            alert('You selected: ' + question_options[i]);
+        socket.emit('ticket', {
+            game_code: game_code,
+            player_name: player_name,
+            action: 'ticket'
         });
-    }
+
+    });
+
+    // disable submit button
+    $("#ticket_btn").prop('disabled', true);
 }
 
 function vote(title, options) {
+    $("#waiting").hide();
+
     let vote_template = $("#vote_template").html();
     vote_template = vote_template.replace("{title}", title);
 
     let question_options = JSON.parse(options);
-    let len = question_options.length;
 
     // 將修改後的模板加入到頁面中的某個元素
     $("#main_game_card").html(vote_template);
+
+    let len = question_options.length;
+
+    // if text in question_options is empty, pop it
+    for (let i = 0; i < len; i++) {
+        if (question_options[i] === "") {
+            question_options.pop(i);
+        }
+    }
+
+    len = question_options.length;
 
     // Hide all buttons initially
     $("#q1, #q2, #q3, #q4").hide();
@@ -259,6 +278,8 @@ function vote(title, options) {
 }
 
 function inputQuestion(title) {
+    $("#waiting").hide();
+
     let input_template = $("#input_template").html();
     input_template = input_template.replace("{title}", title);
 

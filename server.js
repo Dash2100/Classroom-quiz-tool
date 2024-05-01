@@ -50,6 +50,20 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('ticket', (data) => {
+        const game_code = data.game_code;
+        const player_name = data.player_name;
+        const action = data.action;
+
+        if (action === 'ticket') {
+            io.emit('game_' + game_code, {
+                event: 'ticket',
+                player_name: player_name
+            });
+        }
+
+    });
+
 });
 
 app.post('/player/check_code', (req, res) => {
@@ -68,6 +82,30 @@ app.post('/player/check_code', (req, res) => {
             res.json({
                 status: 'success',
                 game_code: row.game_code
+            });
+        } else {
+            res.json({
+                status: 'error',
+                message: 'Game not found'
+            });
+        }
+    });
+
+});
+
+app.get('/player/getGameState/:game_code', (req, res) => {
+    const game_code = req.params.game_code;
+
+    // get started or not from database
+    db.get(`SELECT * FROM Games WHERE game_code = ?`, [game_code], (err, row) => {
+        if (err) {
+            return console.error(err.message);
+        }
+
+        if (row) {
+            res.json({
+                status: 'success',
+                started: row.Started
             });
         } else {
             res.json({
@@ -106,10 +144,14 @@ app.get('/host', (req, res) => {
     res.sendFile(__dirname + '/public/host.html');
 });
 
+app.get('/host/view', (req, res) => {
+    res.sendFile(__dirname + '/public/host_view.html');
+});
+
 app.post('/host/start', (req, res) => {
     const game_code = req.body.game_code;
 
-    db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify({ started: true }), game_code], function (err) {
+    db.run(`UPDATE Games SET Started = ? WHERE game_code = ?`, [true, game_code], function (err) {
         if (err) {
             return console.log(err.message);
         }
@@ -125,14 +167,69 @@ app.post('/host/start', (req, res) => {
     });
 });
 
-app.post('/host/sendQuestion', (req, res) => {
+app.post('/host/sendAction', (req, res) => {
     const game_code = req.body.game_code;
+    const type = req.body.type;
     const question = req.body.question;
 
+    let options = JSON.stringify(req.body.options);
+
+
+    if (type === 'input') {
+        let state = {
+            event: 'question',
+            type: type,
+            title: question
+        }
+
+        io.emit('game_' + game_code, state);
+
+        res.json({
+            status: 'success'
+        });
+    }
+
+    if (type === 'ticket_event') {
+        let state = {
+            event: 'question',
+            type: 'ticket',
+        }
+
+        io.emit('game_' + game_code, state);
+
+        res.json({
+            status: 'success'
+        });
+    }
+
+    if (type === 'vote') {
+        let state = {
+            event: 'question',
+            type: type,
+            title: question,
+            options: options
+        }
+
+        io.emit('game_' + game_code, state);
+
+        res.json({
+            status: 'success'
+        });
+    }
+
     io.emit('game_' + game_code, {
-        event: 'question',
-        question: question
+        event: type,
     });
+
+    if (state) {
+        // wrtie to database (game_detail)
+        db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify(state), game_code], function (err) {
+            if (err) {
+                return console.log(err.message);
+            }
+            console.log(`Game ${game_code} updated`);
+        });
+    }
 
     res.json({
         status: 'success'
@@ -164,22 +261,6 @@ app.post('/host/create', (req, res) => {
     });
 
 });
-
-app.post('/host/updateDetail', (req, res) => {
-    const game_code = req.body.game_code;
-    const game_detail = req.body.game_detail;
-
-    db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify(game_detail), game_code], function (err) {
-        if (err) {
-            return console.log(err.message);
-        }
-        console.log(`Game ${game_code} updated`);
-    });
-
-    res.json({
-        status: 'success'
-    });
-})
 
 app.get('/game/getDetail', (req, res) => {
 

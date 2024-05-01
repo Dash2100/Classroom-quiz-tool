@@ -11,26 +11,53 @@
     <!-- sweetalert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
+    <!-- animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <title>問答系統 | QuizRace</title>
 </head>
 
 <body data-theme="light" class="antialiased h-dvh w-dvw select-none overflow-hidden bg-base-100">
 
-    <h1 class="text-5xl text-center font-black p-10">Game: 000000</h1>
-    <div id="qcard" class="w-full h-full max-w-screen-2xl mx-auto overflow-hidden">
+    <div id="game_code_input" class="flex gap-2 w-max mx-auto py-10">
+        <input type="text" id="game_code" class="input input-primary input-bordered w-96" placeholder="輸入遊戲代碼">
+        <button id="join_game_btn" class="btn btn-primary">加入遊戲</button>
+    </div>
 
-        <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto mt-8">
-            <div class="card-body h-[calc(100vh-238px)] overflow-hidden p-12 flex">
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
-                <kbd class="kbd kbd-lg text-2xl font-black w-fit">你好阿</kbd>
+    <h1 class="text-5xl text-center font-black p-10">Game: <span id="game_code_diaply"></span></h1>
+
+    <div id="waiting_player_page" style="display: none;">
+        <div id="qcard" class="w-full h-full mx-auto overflow-hidden">
+
+            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto">
+
+                <div class="card-body h-[calc(100vh-238px)] overflow-hidden p-12">
+                    <div class="flex flex-wrap gap-5" id="player-list">
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div id="ticket_page" style="display: none;">
+        <div id="qcard" class="w-full h-full mx-auto overflow-hidden">
+
+            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto">
+
+                <div class="card-body h-[calc(100vh-238px)] overflow-hidden p-12">
+                    <h2 class="text-3xl font-black mb-5">已搶答列表 (按照時間順序)</h2>
+                    <div class="flex flex-wrap gap-5" id="ticket-player-list">
+
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
+
 </body>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -38,7 +65,99 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
 
 <script>
+    let game_code = null;
 
+    let socket = io();
+
+    socket.on('connect', () => {
+        console.log('Connected to server');
+    });
+
+    $('#join_game_btn').click(function () {
+        let game_code = $('#game_code').val();
+        $('#game_code_diaply').text(game_code);
+        connectGame(game_code);
+    });
+
+    function connectGame(_game_code) {
+        // check game_code exists
+        const check_data = {
+            game_code: _game_code
+        };
+
+        const socker_connection = (game_code) => {
+            // listen on game event socket
+            socket.on('game_' + game_code, function (data) {
+                console.log(data)
+
+                if (data.event === 'player_join') {
+                    addPlayer(data.player_name);
+                }
+            });
+
+            socket.on('game_' + game_code, function (data) {
+                console.log(data)
+
+                if (data.event === 'ticket') {
+                    addTicketPlayer(data.player_name);
+                }
+
+                if (data.event === 'question') {
+                    if (data.type === 'ticket') {
+                        // show ticket page
+                        $(`#waiting_player_page`).hide();
+                        $(`#ticket_page`).show();
+                    }
+                }
+
+                if (data.event === 'close_question') {
+                    // show waiting_player_page
+                    $(`#ticket_page`).hide();
+                    $(`#waiting_player_page`).show();
+                }
+            });
+        }
+
+        $.ajax({
+            url: '/player/check_code/',
+            type: 'POST',
+            data: JSON.stringify(check_data),
+            contentType: 'application/json',
+            success: function (data) {
+                if (data.status === "success") {
+                    // set global game_code
+                    game_code = _game_code;
+
+                    // listen on game event socket
+                    socker_connection(game_code);
+
+                    // hide game_code_input
+                    $(`#game_code_input`).hide();
+                    // show waiting_player_page
+                    $(`#waiting_player_page`).show();
+                }
+
+                if (data.status === "error") {
+                    alert('找不到遊戲');
+                }
+            }
+        });
+    }
+
+    function addPlayer(name) {
+        let player = document.createElement('div');
+        player.classList.add('kbd', 'kbd-lg', 'text-2xl', 'font-black', 'w-fit', 'animate__bounceIn');
+        player.innerText = name;
+        document.getElementById('player-list').appendChild(player);
+    }
+
+    function addTicketPlayer(name) {
+        let player = document.createElement('div');
+        player.classList.add('kbd', 'kbd-lg', 'text-2xl', 'font-black', 'w-fit', 'animate__bounceIn');
+        player.innerText = name;
+        document.getElementById('ticket-player-list').appendChild(player);
+    }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
 
 </html>

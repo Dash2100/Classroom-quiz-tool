@@ -12,6 +12,8 @@
     <!-- sweetalert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <title>主持畫面 | QuizRace</title>
 </head>
 
@@ -22,6 +24,9 @@
     <!-- 初始創建畫面 -->
     <div id="create_game_page">
         <button id="create_game_btn">創建遊戲</button>
+        <br>
+        <input type="text" id="game_code_input" placeholder="輸入遊戲代碼">
+        <button id="join_game_btn">加入遊戲</button>
     </div>
 
     <!-- 遊戲腳本 -->
@@ -40,9 +45,13 @@
 
     <!-- 發送題目 -->
     <div id="send_question" style="display: none;">
-        <button id="send_question_select">選擇題</button>
+        <button id="send_question_ticket">搶答</button>
+        <button id="ticket_allow">開放搶答</button>
+        <br>
         <button id="send_question_vote">投票</button>
         <button id="send_question_input">文字輸入</button>
+        <br>
+        <button id="close_question">關閉題目</button>
     </div>
 
 </body>
@@ -84,6 +93,14 @@
                     }
                 }
             });
+        });
+
+        $("#join_game_btn").click(function () {
+            game_code = $("#game_code_input").val()
+
+            $('#send_question').show();
+            $('#create_game_page').hide();
+
         });
 
         $("#start_game_btn").click(function () {
@@ -143,41 +160,22 @@
         });
     }
 
-    // three type 'question', 'vote', 'input' to select use SWAL
-    $('#send_question_select').click(function () {
-
+    // three type 'ticket', 'vote', 'input' to select use SWAL
+    $("#send_question_ticket").click(function () {
         Swal.fire({
-            title: '發送選擇題',
-            html: '<input id="swal-input1" class="swal2-input" placeholder="題目">' +
-                '<input id="swal-input2" class="swal2-input" placeholder="選項1">' +
-                '<input id="swal-input3" class="swal2-input" placeholder="選項2">' +
-                '<input id="swal-input4" class="swal2-input" placeholder="選項3">' +
-                '<input id="swal-input5" class="swal2-input" placeholder="選項3">' +
-                '<input id="swal-input5" class="swal2-input" placeholder="答案">',
+            title: '發送搶答題',
             focusConfirm: false,
-            preConfirm: () => {
-                return [
-                    document.getElementById('swal-input1').value,
-                    document.getElementById('swal-input2').value,
-                    document.getElementById('swal-input3').value,
-                    document.getElementById('swal-input4').value,
-                    document.getElementById('swal-input5').value
-                ]
-            }
         }).then((result) => {
             if (result.value) {
                 const answers = JSON.stringify(result.value)
 
                 const data = {
                     game_code: game_code,
-                    type: 'question',
-                    question: result.value[0],
-                    options: String(result.value.slice(1, 4)),
-                    answer: result.value[4]
+                    type: 'ticket_event',
                 }
 
                 $.ajax({
-                    url: '/host/sendQuestion',
+                    url: '/host/sendAction',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
@@ -191,7 +189,6 @@
                 console.log(data);
             }
         })
-
     });
 
     $('#send_question_vote').click(function () {
@@ -202,7 +199,7 @@
                 '<input id="swal-input2" class="swal2-input" placeholder="選項1">' +
                 '<input id="swal-input3" class="swal2-input" placeholder="選項2">' +
                 '<input id="swal-input4" class="swal2-input" placeholder="選項3">' +
-                '<input id="swal-input5" class="swal2-input" placeholder="選項3">',
+                '<input id="swal-input5" class="swal2-input" placeholder="選項4">',
             focusConfirm: false,
             preConfirm: () => {
                 return [
@@ -221,12 +218,12 @@
                     game_code: game_code,
                     type: 'vote',
                     question: result.value[0],
-                    options: String(result.value.slice(1, 4)),
+                    options: result.value.slice(1, 5),
                     answer: result.value[4]
                 }
 
                 $.ajax({
-                    url: '/host/sendQuestion',
+                    url: '/host/sendAction',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
@@ -265,7 +262,7 @@
                 }
 
                 $.ajax({
-                    url: '/host/sendQuestion',
+                    url: '/host/sendAction',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
@@ -282,6 +279,43 @@
 
     });
 
+    $("#ticket_allow").click(function () {
+        const data = {
+            game_code: game_code,
+            type: 'ticket_allow'
+        }
+
+        $.ajax({
+            url: '/host/sendAction',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (data) {
+                if (data.status === "success") {
+                    console.log(data)
+                }
+            }
+        });
+    });
+
+    $('#close_question').click(function () {
+        const data = {
+            game_code: game_code,
+            type: 'close_question'
+        }
+
+        $.ajax({
+            url: '/host/sendAction',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (data) {
+                if (data.status === "success") {
+                    console.log(data)
+                }
+            }
+        });
+    });
 
 </script>
 
