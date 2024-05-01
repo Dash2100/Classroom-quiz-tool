@@ -20,7 +20,7 @@ app.use('/scripts', express.static(__dirname + '/node_modules/zepto/dist/'));
 
 // players
 app.get('/player', (req, res) => {
-    res.sendFile(__dirname + '/public/game.html');
+    res.sendFile(__dirname + '/public/player.html');
 });
 
 app.post('/player/identify', (req, res) => {
@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
 
         console.log('Player ' + player_name + ' joined game ' + game_code);
 
-        io.emit('host_' + game_code, {
+        io.emit('game_' + game_code, {
             event: 'player_join',
             player_name: player_name
         });
@@ -55,7 +55,11 @@ io.on('connection', (socket) => {
 app.post('/player/check_code', (req, res) => {
     const game_code = req.body.game_code;
 
+    console.log(game_code);
+
     db.get(`SELECT * FROM Games WHERE game_code = ?`, [game_code], (err, row) => {
+        console.log(row);
+
         if (err) {
             return console.error(err.message);
         }
@@ -75,6 +79,28 @@ app.post('/player/check_code', (req, res) => {
 
 });
 
+app.get('/player/getGameDetail/:game_code', (req, res) => {
+    const game_code = req.params.game_code;
+
+    db.get(`SELECT * FROM Games WHERE game_code = ?`, [game_code], (err, row) => {
+        if (err) {
+            return console.error(err.message);
+        }
+
+        if (row) {
+            res.json({
+                status: 'success',
+                game_detail: JSON.parse(row.game_detail)
+            });
+        } else {
+            res.json({
+                status: 'error',
+                message: 'Game not found'
+            });
+        }
+    });
+});
+
 // hosts
 app.get('/host', (req, res) => {
     res.sendFile(__dirname + '/public/host.html');
@@ -83,7 +109,7 @@ app.get('/host', (req, res) => {
 app.post('/host/start', (req, res) => {
     const game_code = req.body.game_code;
 
-    db.run(`UPDATE Games SET Started = 1 WHERE game_code = ?`, [game_code], function (err) {
+    db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify({ started: true }), game_code], function (err) {
         if (err) {
             return console.log(err.message);
         }
@@ -99,6 +125,20 @@ app.post('/host/start', (req, res) => {
     });
 });
 
+app.post('/host/sendQuestion', (req, res) => {
+    const game_code = req.body.game_code;
+    const question = req.body.question;
+
+    io.emit('game_' + game_code, {
+        event: 'question',
+        question: question
+    });
+
+    res.json({
+        status: 'success'
+    });
+});
+
 app.post('/host/create', (req, res) => {
     // ```
     // id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,7 +147,8 @@ app.post('/host/create', (req, res) => {
     // game_detail TEXT
     // ```
 
-    const game_code = Math.random().toString(36).substring(2, 8);
+    // gebnerate game code (6 digits)
+    const game_code = Math.floor(100000 + Math.random() * 900000);
 
     // insert game to database
     db.run(`INSERT INTO Games (game_code) VALUES (?)`, [game_code], function (err) {

@@ -1,0 +1,40 @@
+.swal2-popup {
+    border-radius: 10px !important;
+}
+
+.swal2-show {
+    animation: show .2s !important;
+}
+
+.swal2-hide {
+    animation: hide .2s !important;
+}
+
+@keyframes show {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+@keyframes hide {
+    0% {
+        transform: scale(1);
+        opacity: 1
+    }
+
+    100% {
+        transform: scale(0.8);
+        opacity: 0
+    }
+}
+
+body {
+    height: 100dvh !important;
+}

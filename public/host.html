@@ -4,8 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/src/player.css">
     <script src="/scripts/zepto.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+
+    <!-- sweetalert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
     <title>主持畫面 | QuizRace</title>
 </head>
 
@@ -30,6 +36,13 @@
         <h2>等待玩家加入</h2>
         <button id="start_game_btn">開始遊戲</button>
         <div id="player-list"></div>
+    </div>
+
+    <!-- 發送題目 -->
+    <div id="send_question" style="display: none;">
+        <button id="send_question_select">選擇題</button>
+        <button id="send_question_vote">投票</button>
+        <button id="send_question_input">文字輸入</button>
     </div>
 
 </body>
@@ -63,7 +76,7 @@
 
                         // update UI
                         $("#create_game_page").hide()
-                        $("#update_detail_page").show()
+                        $("#waiting_player_page").show()
                         $("#game_code").text(game_code)
 
                         // socket connection
@@ -87,7 +100,7 @@
                     if (data.status === "success") {
                         // update UI
                         $("#waiting_player_page").hide()
-                        // xxx
+                        $('#send_question').show()
                     }
                 }
             });
@@ -118,7 +131,7 @@
 
     const socket_connection = (game_code) => {
         // listen to game event
-        socket.on('host_' + game_code, function (data) {
+        socket.on('game_' + game_code, function (data) {
             console.log(data)
 
             if (data.event === 'player_join') {
@@ -129,6 +142,150 @@
             }
         });
     }
+
+    // three type 'question', 'vote', 'input' to select use SWAL
+    $('#send_question_select').click(function () {
+
+        Swal.fire({
+            title: '發送選擇題',
+            html: '<input id="swal-input1" class="swal2-input" placeholder="題目">' +
+                '<input id="swal-input2" class="swal2-input" placeholder="選項1">' +
+                '<input id="swal-input3" class="swal2-input" placeholder="選項2">' +
+                '<input id="swal-input4" class="swal2-input" placeholder="選項3">' +
+                '<input id="swal-input5" class="swal2-input" placeholder="選項3">' +
+                '<input id="swal-input5" class="swal2-input" placeholder="答案">',
+            focusConfirm: false,
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input1').value,
+                    document.getElementById('swal-input2').value,
+                    document.getElementById('swal-input3').value,
+                    document.getElementById('swal-input4').value,
+                    document.getElementById('swal-input5').value
+                ]
+            }
+        }).then((result) => {
+            if (result.value) {
+                const answers = JSON.stringify(result.value)
+
+                const data = {
+                    game_code: game_code,
+                    type: 'question',
+                    question: result.value[0],
+                    options: String(result.value.slice(1, 4)),
+                    answer: result.value[4]
+                }
+
+                $.ajax({
+                    url: '/host/sendQuestion',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        if (data.status === "success") {
+                            console.log(data)
+                        }
+                    }
+                });
+
+                console.log(data);
+            }
+        })
+
+    });
+
+    $('#send_question_vote').click(function () {
+
+        Swal.fire({
+            title: '發送投票題',
+            html: '<input id="swal-input1" class="swal2-input" placeholder="題目">' +
+                '<input id="swal-input2" class="swal2-input" placeholder="選項1">' +
+                '<input id="swal-input3" class="swal2-input" placeholder="選項2">' +
+                '<input id="swal-input4" class="swal2-input" placeholder="選項3">' +
+                '<input id="swal-input5" class="swal2-input" placeholder="選項3">',
+            focusConfirm: false,
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input1').value,
+                    document.getElementById('swal-input2').value,
+                    document.getElementById('swal-input3').value,
+                    document.getElementById('swal-input4').value,
+                    document.getElementById('swal-input5').value
+                ]
+            }
+        }).then((result) => {
+            if (result.value) {
+                const answers = JSON.stringify(result.value)
+
+                const data = {
+                    game_code: game_code,
+                    type: 'vote',
+                    question: result.value[0],
+                    options: String(result.value.slice(1, 4)),
+                    answer: result.value[4]
+                }
+
+                $.ajax({
+                    url: '/host/sendQuestion',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        if (data.status === "success") {
+                            console.log(data)
+                        }
+                    }
+                });
+
+                console.log(data);
+            }
+        })
+
+    });
+
+    $('#send_question_input').click(function () {
+
+        Swal.fire({
+            title: '發送文字輸入題',
+            html: '<input id="swal-input1" class="swal2-input" placeholder="題目">',
+            focusConfirm: false,
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input1').value,
+                ]
+            }
+        }).then((result) => {
+            if (result.value) {
+                const answers = JSON.stringify(result.value)
+
+                const data = {
+                    game_code: game_code,
+                    type: 'input',
+                    question: result.value[0],
+                }
+
+                $.ajax({
+                    url: '/host/sendQuestion',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        if (data.status === "success") {
+                            console.log(data)
+                        }
+                    }
+                });
+
+                console.log(data);
+            }
+        })
+
+    });
+
+
 </script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/scripts/zepto.min.js"></script>
 
 </html>
