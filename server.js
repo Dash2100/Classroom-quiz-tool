@@ -14,11 +14,20 @@ const io = new Server(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./game_data.db');
 
+//tmp
+let tmp = [];
+
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/scripts', express.static(__dirname + '/node_modules/zepto/dist/'));
 
 // players
+app.get('/', (req, res) => {
+    // redirect to player page
+    res.redirect('/player');
+});
+
+
 app.get('/player', (req, res) => {
     res.sendFile(__dirname + '/public/player.html');
 });
@@ -42,7 +51,15 @@ io.on('connection', (socket) => {
         const game_code = data.game_code;
         const player_name = data.player_name;
 
+        if (tmp.includes(player_name)) {
+            return;
+        }
+
         console.log('Player ' + player_name + ' joined game ' + game_code);
+
+        console.log(tmp);
+
+        tmp.push(player_name);
 
         io.emit('game_' + game_code, {
             event: 'player_join',
@@ -62,6 +79,30 @@ io.on('connection', (socket) => {
             });
         }
 
+    });
+
+    socket.on('vote', (data) => {
+        const game_code = data.game_code;
+        const player_name = data.player_name;
+        const option = data.option;
+
+        io.emit('game_' + game_code, {
+            event: 'player_vote',
+            player_name: player_name,
+            option: option
+        });
+    });
+
+    socket.on('input', (data) => {
+        const game_code = data.game_code;
+        const player_name = data.player_name;
+        const answer = data.answer;
+
+        io.emit('game_' + game_code, {
+            event: 'player_input',
+            player_name: player_name,
+            answer: answer
+        });
     });
 
 });
@@ -183,10 +224,6 @@ app.post('/host/sendAction', (req, res) => {
         }
 
         io.emit('game_' + game_code, state);
-
-        res.json({
-            status: 'success'
-        });
     }
 
     if (type === 'ticket_event') {
@@ -196,10 +233,6 @@ app.post('/host/sendAction', (req, res) => {
         }
 
         io.emit('game_' + game_code, state);
-
-        res.json({
-            status: 'success'
-        });
     }
 
     if (type === 'vote') {
@@ -211,25 +244,33 @@ app.post('/host/sendAction', (req, res) => {
         }
 
         io.emit('game_' + game_code, state);
+    }
 
-        res.json({
-            status: 'success'
-        });
+    if (type === 'url') {
+        let state = {
+            event: 'question',
+            type: type,
+            title: question
+        }
+
+        console.log(state)
+
+        io.emit('game_' + game_code, state);
     }
 
     io.emit('game_' + game_code, {
         event: type,
     });
 
-    if (state) {
-        // wrtie to database (game_detail)
-        db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify(state), game_code], function (err) {
-            if (err) {
-                return console.log(err.message);
-            }
-            console.log(`Game ${game_code} updated`);
-        });
-    }
+    // if (state) {
+    //     // wrtie to database (game_detail)
+    //     db.run(`UPDATE Games SET game_detail = ? WHERE game_code = ?`, [JSON.stringify(state), game_code], function (err) {
+    //         if (err) {
+    //             return console.log(err.message);
+    //         }
+    //         console.log(`Game ${game_code} updated`);
+    //     });
+    // }
 
     res.json({
         status: 'success'

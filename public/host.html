@@ -45,11 +45,15 @@
 
     <!-- 發送題目 -->
     <div id="send_question" style="display: none;">
+        <button id="start_game_btn">開始遊戲</button>
+        <br>
         <button id="send_question_ticket">搶答</button>
         <button id="ticket_allow">開放搶答</button>
         <br>
         <button id="send_question_vote">投票</button>
         <button id="send_question_input">文字輸入</button>
+        <br>
+        <button id="send_URL">給 URL</button>
         <br>
         <button id="close_question">關閉題目</button>
     </div>
@@ -315,6 +319,44 @@
                 }
             }
         });
+    });
+
+    $('#send_URL').click(function () {
+        Swal.fire({
+            title: '發送網址',
+            html: '<input id="swal-input1" class="swal2-input" placeholder="網址">',
+            focusConfirm: false,
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input1').value,
+                ]
+            }
+        }).then((result) => {
+            if (result.value) {
+                const answers = JSON.stringify(result.value)
+
+                const data = {
+                    game_code: game_code,
+                    type: 'url',
+                    question: result.value[0],
+                }
+
+                $.ajax({
+                    url: '/host/sendAction',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        if (data.status === "success") {
+                            console.log(data)
+                        }
+                    }
+                });
+
+                console.log(data);
+            }
+        })
+
     });
 
 </script>

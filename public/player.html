@@ -20,7 +20,7 @@
 
     <div class="navbar bg-base-200 overflow-hidden">
         <div class="navbar-start">
-
+            <p class="text-lg font-bold ml-3" id="current_player_name"></p>
         </div>
         <div class="navbar-center">
             <a class="btn btn-ghost text-xl font-extrabold">
@@ -118,6 +118,10 @@
                         </lord-icon>
                         <h2 class="font-black text-3xl md:text-4xl text-center">目前沒有題目！</h2>
                         <p class="text-xl md:text-2xl text-center">等待主持人出題中...</p>
+                    </div>
+
+                    <div id="urlshow" class="flex flex-col gap-3 my-auto" style="display: none;">
+                        <h2 class="font-black text-3xl md:text-4xl text-center"></h2>
                     </div>
 
                     <div id="main_game_card"></div>

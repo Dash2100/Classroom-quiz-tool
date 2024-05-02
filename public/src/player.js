@@ -29,6 +29,8 @@ const socker_connection = (game_code) => {
             if (data.player_name === player_name) {
                 player_named = true;
                 join_game_event();
+
+                $('#current_player_name').text(player_name);
             }
         }
 
@@ -53,6 +55,10 @@ const socker_connection = (game_code) => {
 
             if (type === 'input') {
                 inputQuestion(title);
+            }
+
+            if (type === 'url') {
+                sendURL(title);
             }
         }
 
@@ -145,6 +151,12 @@ function enter_name() {
     player_name = $('#player_name').val();
 
     if (player_name === '') {
+        alert('錯誤', '請輸入名稱', 'error');
+        return;
+    }
+
+    // 防止輸入全空白
+    if (!player_name.replace(/\s/g, '').length) {
         alert('錯誤', '請輸入名稱', 'error');
         return;
     }
@@ -272,7 +284,16 @@ function vote(title, options) {
 
         // Example event handler: alert the option when clicked
         button.off('click').on('click', function () {
-            alert('You selected: ' + question_options[i]);
+            alert('你選擇了: ' + question_options[i]);
+            //disable buttons
+            $("#q1, #q2, #q3, #q4").prop('disabled', true);
+
+            socket.emit('vote', {
+                game_code: game_code,
+                player_name: player_name,
+                action: 'vote',
+                option: i
+            });
         });
     }
 }
@@ -290,5 +311,25 @@ function inputQuestion(title) {
     $("#submit_input").off('click').on('click', function () {
         let inputAns = $("#input_answer").val();
         alert(inputAns);
+
+        // $("#submit_input").prop('disabled', true);
+
+        socket.emit('input', {
+            game_code: game_code,
+            player_name: player_name,
+            action: 'input',
+            answer: inputAns
+        });
     });
+}
+
+function sendURL(title) {
+    $("#waiting").hide();
+
+    let html = `<h2 class="font-black text-3xl md:text-4xl text-center cursor-pointer text-info" onclick="window.open('${title}', '_blank')">${title}</h2>`;
+
+    // append
+    $('#urlshow').html(html);
+
+    $('#urlshow').show();
 }

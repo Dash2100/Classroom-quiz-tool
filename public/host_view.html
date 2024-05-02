@@ -24,7 +24,7 @@
         <button id="join_game_btn" class="btn btn-primary">加入遊戲</button>
     </div>
 
-    <h1 class="text-5xl text-center font-black p-10">Game: <span id="game_code_diaply"></span></h1>
+    <h1 class="text-5xl text-center font-black p-10"><span id="game_code_diaply"></span></h1>
 
     <div id="waiting_player_page" style="display: none;">
         <div id="qcard" class="w-full h-full mx-auto overflow-hidden">
@@ -58,6 +58,41 @@
         </div>
     </div>
 
+    <div id="vote_page" style="display: none;">
+        <div id="qcard" class="w-full h-full mx-auto overflow-hidden">
+
+            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto">
+
+                <div class="card-body h-[calc(100vh-238px)] overflow-hidden p-12">
+                    <h2 class="text-3xl font-black mb-5">題目: <span id="vote_title"></span></h2>
+                    <div class="grid md:grid-cols-2 gap-4 h-full">
+                        <button class="btn text-base-100 btn-info h-full text-4xl" id="vote_q1">0</button>
+                        <button class="btn text-base-100 btn-warning h-full text-4xl" id="vote_q2">0</button>
+                        <button class="btn text-base-100 btn-success h-full text-4xl" id="vote_q3">0</button>
+                        <button class="btn text-base-100 btn-error h-full text-4xl" id="vote_q4">0</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="player_input_page" style="display: none;">
+        <div id="qcard" class="w-full h-full mx-auto overflow-hidden">
+
+            <div class="card bg-base-300 shadow-xl md:w-10/12 w-11/12 mx-auto">
+
+                <div class="card-body h-[calc(100vh-238px)] overflow-hidden p-12">
+                    <div class="flex flex-wrap gap-5" id="player-input-list">
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
 </body>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -68,6 +103,16 @@
     let game_code = null;
 
     let socket = io();
+
+    let question_options = [];
+
+    //fot vote
+    let vote_count = {
+        q1: 0,
+        q2: 0,
+        q3: 0,
+        q4: 0
+    };
 
     socket.on('connect', () => {
         console.log('Connected to server');
@@ -104,18 +149,49 @@
 
                 if (data.event === 'question') {
                     if (data.type === 'ticket') {
-                        // show ticket page
-                        $(`#waiting_player_page`).hide();
+                        $("#ticket-player-list").html('');
+                        hideAll();
                         $(`#ticket_page`).show();
+                    }
+
+                    if (data.type === 'vote') {
+                        vote(data.title, data.options);
+                    }
+
+                    if (data.type === 'input') {
+                        $("#player-input-list").html('');
+                        hideAll();
+                        $('#player_input_page').show();
                     }
                 }
 
                 if (data.event === 'close_question') {
                     // show waiting_player_page
-                    $(`#ticket_page`).hide();
+                    hideAll();
                     $(`#waiting_player_page`).show();
                 }
+
+                if (data.event === 'player_vote') {
+                    let dopt = parseInt(data.option) + 1;
+
+                    vote_count['q' + dopt]++;
+
+                    let len = Object.keys(vote_count).length;
+
+                    // alert(JSON.stringify(vote_count));
+
+                    $("#vote_q" + dopt).text(question_options[data.option] + " ( " + vote_count["q" + dopt] + " )");
+                }
+
+                if (data.event === 'player_input') {
+                    let player_input = document.createElement('div');
+                    player_input.classList.add('kbd', 'kbd-lg', 'text-2xl', 'font-black', 'w-fit', 'animate__bounceIn');
+                    player_input.innerText = data.answer;
+                    document.getElementById('player-input-list').appendChild(player_input);
+                }
+
             });
+
         }
 
         $.ajax({
@@ -156,6 +232,39 @@
         player.classList.add('kbd', 'kbd-lg', 'text-2xl', 'font-black', 'w-fit', 'animate__bounceIn');
         player.innerText = name;
         document.getElementById('ticket-player-list').appendChild(player);
+    }
+
+    function vote(title, options) {
+        $(`#vote_title`).text(title);
+        question_options = JSON.parse(options);
+
+        let len = question_options.length;
+
+        // if text in question_options is empty, pop it
+        for (let i = 0; i < len; i++) {
+            if (question_options[i] === "") {
+                question_options.pop(i);
+            }
+        }
+
+        len = question_options.length;
+
+        $("#vote_q1, #vote_q2, #vote_q3, #vote_q4").hide();
+
+        for (let i = 0; i < len; i++) {
+            let button = $("#vote_q" + (i + 1));
+            button.text(question_options[i] + " ( " + vote_count["q" + (i + 1)] + " )");
+            button.show();
+        }
+
+        hideAll();
+        $(`#vote_page`).show();
+    }
+
+    function hideAll() {
+        $(`#ticket_page`).hide();
+        $(`#waiting_player_page`).hide();
+        $(`#vote_page`).hide();
     }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
